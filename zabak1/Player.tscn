@@ -52,5 +52,4 @@ shape = SubResource( 1 )
 frames = SubResource( 8 )
 animation = "jump"
 frame = 1
-playing = true
 flip_v = true
