@@ -43,7 +43,10 @@ animations = [ {
 } ]
 
 [node name="Player" type="Area2D"]
+z_index = 10
 script = ExtResource( 2 )
+jumpDist = 70.0
+jumpSpeed = 100.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource( 1 )
@@ -53,3 +56,6 @@ frames = SubResource( 8 )
 animation = "jump"
 frame = 1
 flip_v = true
+
+[connection signal="area_entered" from="." to="." method="_on_Player_area_entered"]
+[connection signal="area_exited" from="." to="." method="_on_Player_area_exited"]
