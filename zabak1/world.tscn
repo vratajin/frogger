@@ -5,3 +5,4 @@
 [node name="World" type="Node2D"]
 
 [node name="Spawner" parent="." instance=ExtResource( 2 )]
+trajectoryCount = 5

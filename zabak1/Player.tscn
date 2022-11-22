@@ -45,7 +45,7 @@ animations = [ {
 [node name="Player" type="Area2D"]
 z_index = 10
 script = ExtResource( 2 )
-jumpDist = 70.0
+jumpDist = 90.0
 jumpSpeed = 100.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

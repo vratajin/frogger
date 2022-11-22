@@ -2,12 +2,14 @@ extends Area2D
 
 export var jumpDist:float = 100
 export var jumpSpeed:float = 50
-var jumpAccu:float = 0
+var speedActual:float
+var distActual:float
+var jumpAccu:Vector2
 var jumping:bool = false
-var collidingObstace:Node
+var collidingObstacle:Node
 var sittingOffset:Vector2
-
-signal playerDied
+var velocity:Vector2
+signal playerDied(pos)
 
 # Declare member variables here. Examples:
 # var a: int = 2
@@ -23,38 +25,57 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	#print(delta)
-	if Input.is_action_pressed("jump"):
+	
+	if not jumping:
+		speedActual = jumpSpeed
+		distActual = jumpDist
+		velocity = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+		if Input.is_action_pressed("ui_left"):
+			$AnimatedSprite.rotation_degrees = -90
+			if collidingObstacle and collidingObstacle.direction == -1:
+				speedActual = jumpSpeed + collidingObstacle.speed
+				distActual = (speedActual / jumpSpeed) * jumpDist
+		if Input.is_action_pressed("ui_right"):
+			$AnimatedSprite.rotation_degrees = 90
+			if collidingObstacle and collidingObstacle.direction == 1:
+				speedActual = jumpSpeed + collidingObstacle.speed
+				distActual = (speedActual / jumpSpeed) * jumpDist
+		if Input.is_action_pressed("ui_up"):
+			$AnimatedSprite.rotation_degrees = 0
+		if Input.is_action_pressed("ui_down"):
+			$AnimatedSprite.rotation_degrees = 180
+	if velocity:
 		if not jumping:
 			jumping = true
-			jumpAccu = 0
+			jumpAccu = Vector2.ZERO
 			$AnimatedSprite.play("jump")
-			collidingObstace = null
 		
 	if jumping:
-		var jumpDelta = delta * jumpSpeed
-		#var jumpDelta = jumpSpeed
-		if jumpAccu + jumpDelta >= jumpDist:
-			jumpDelta = jumpDist - jumpAccu
+		var jumpDelta = delta * speedActual * velocity
+		if (jumpAccu + jumpDelta).length() >= distActual:
+			jumpDelta = (velocity * distActual) - jumpAccu
 			jumping = false
 			$AnimatedSprite.play("idle")
-			if collidingObstace:
-				sittingOffset = position - collidingObstace.position
+			if collidingObstacle:
+				sittingOffset = position - collidingObstacle.position
 			else:
 				print("player died")
-				emit_signal("playerDied")
+				emit_signal("playerDied",position)
 				queue_free()
 		else:
 			jumpAccu += jumpDelta
-		position.y -= jumpDelta
+		position += jumpDelta
 	else:
-		if collidingObstace:
-			position = collidingObstace.position + sittingOffset
+		if collidingObstacle:
+			position = collidingObstacle.position + sittingOffset
 		
 
 
 func _on_Player_area_entered(area: Area2D) -> void:
-	collidingObstace = area
+	collidingObstacle = area
 	print("_on_Player_area_entered")
 
 func _on_Player_area_exited(area: Area2D) -> void:
+	if area == collidingObstacle:
+		collidingObstacle = null
 	print("_on_Player_area_exited")
