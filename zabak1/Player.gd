@@ -49,6 +49,7 @@ func _process(delta: float) -> void:
 			jumping = true
 			jumpAccu = Vector2.ZERO
 			$AnimatedSprite.play("jump")
+			$SoundHop.play()
 		
 	if jumping:
 		var jumpDelta = delta * speedActual * velocity
@@ -59,9 +60,7 @@ func _process(delta: float) -> void:
 			if collidingObstacle:
 				sittingOffset = position - collidingObstacle.position
 			else:
-				print("player died")
-				emit_signal("playerDied",position)
-				queue_free()
+				die(position)
 		else:
 			jumpAccu += jumpDelta
 		position += jumpDelta
@@ -71,6 +70,12 @@ func _process(delta: float) -> void:
 		
 
 
+func die(pos: Vector2):
+	emit_signal("playerDied",position)
+	queue_free()
+	
+	
+
 func _on_Player_area_entered(area: Area2D) -> void:
 	collidingObstacle = area
 	print("_on_Player_area_entered")
@@ -79,3 +84,7 @@ func _on_Player_area_exited(area: Area2D) -> void:
 	if area == collidingObstacle:
 		collidingObstacle = null
 	print("_on_Player_area_exited")
+
+
+func _on_VisibilityNotifier2D_screen_exited() -> void:
+	die(position)

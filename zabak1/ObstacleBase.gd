@@ -21,3 +21,7 @@ func getHalfLength() ->int:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	position.x += direction * delta * speed
+
+
+func _on_VisibilityNotifier2D_screen_exited() -> void:
+	queue_free()
