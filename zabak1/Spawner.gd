@@ -8,6 +8,7 @@ export var drawTrajectories:bool = false;
 #export var obstacleScenes:PackedScene = []
 var obstacleLog1:PackedScene = preload("res://ObstacleLog1.tscn")
 var obstacleLily:PackedScene = preload("res://ObstacleWaterlily.tscn")
+var obstacleTurtle:PackedScene = preload("res://ObstacleTurtle.tscn")
 var player = preload("res://Player.tscn")
 var deadFrog = preload("res://DeadFrog.tscn")
 var spawnTrajectories = []
@@ -21,6 +22,7 @@ func _ready() -> void:
 		spawnTrajectories.append([])
 	obstacles.append(obstacleLily)
 	obstacles.append(obstacleLog1)
+	obstacles.append(obstacleTurtle)
 	
 
 func getSpawnLocation(index) -> Vector2:
@@ -56,7 +58,7 @@ func spawnLoop():
 		if spawnLocation != Vector2.INF:
 			var obstacle = obstacles[randi() % obstacles.size()-1]
 			var instance = obstacle.instance()
-			var spawnOffset = Vector2(instance.getHalfLength() + 100,0)
+			var spawnOffset = Vector2(instance.getHalfLength() + 300,0)
 			if index % 2 == 1:
 				instance.position = spawnLocation + spawnOffset
 				instance.init(1)
@@ -70,6 +72,8 @@ func spawnLoop():
 	
 
 func respawnPlayer():
+	if not $'..'.canRespawnPlayer():
+		return
 	var playerLocX:int = screenSize.x /2
 	var playerLocY:int = trajectoryOffset + (trajectoryGap * trajectoryCount)
 	var spawnLocation:Vector2 = Vector2(playerLocX, playerLocY)
@@ -78,11 +82,16 @@ func respawnPlayer():
 	add_child(instance)
 	instance.connect("playerDied", self, "onPlayerDied")
 	
+	
 func onPlayerDied(pos):
+	spawnDeadFrog(pos)
+	respawnPlayer()
+	$'..'.onPlayerDied()
+	
+func spawnDeadFrog(pos):
 	var instance = deadFrog.instance()
 	instance.position = pos
 	add_child(instance)
-	respawnPlayer()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
@@ -96,3 +105,11 @@ func _draw():
 		var to:Vector2 = from
 		to.x = screenSize.x / 2
 		draw_line(from, to, Color.aqua)
+
+
+func _on_LandingSpot1_playerLanded() -> void:
+	respawnPlayer()
+
+
+func _on_LandingSpot2_playerLanded() -> void:
+	respawnPlayer()

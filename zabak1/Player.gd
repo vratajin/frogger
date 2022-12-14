@@ -6,10 +6,13 @@ var speedActual:float
 var distActual:float
 var jumpAccu:Vector2
 var jumping:bool = false
-var collidingObstacle:Node
+var collidingObstacle:ObstacleBase
 var sittingOffset:Vector2
 var velocity:Vector2
 signal playerDied(pos)
+var canDie:bool = true
+
+var dying:bool
 
 # Declare member variables here. Examples:
 # var a: int = 2
@@ -19,13 +22,9 @@ signal playerDied(pos)
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	seed(5)
-	
-
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	#print(delta)
-	
 	if not jumping:
 		speedActual = jumpSpeed
 		distActual = jumpDist
@@ -59,26 +58,37 @@ func _process(delta: float) -> void:
 			$AnimatedSprite.play("idle")
 			if collidingObstacle:
 				sittingOffset = position - collidingObstacle.position
+				if collidingObstacle.onFrogLanded() == true:
+					canDie = false
+					queue_free()
+					
 			else:
-				die(position)
+				die()
 		else:
 			jumpAccu += jumpDelta
 		position += jumpDelta
 	else:
 		if collidingObstacle:
+			if !collidingObstacle.isSolid:
+				die()
 			position = collidingObstacle.position + sittingOffset
-		
+			
 
 
-func die(pos: Vector2):
+func die():
+	if dying:
+		return
+	if not canDie:
+		return
+	dying = true
 	emit_signal("playerDied",position)
 	queue_free()
 	
-	
 
 func _on_Player_area_entered(area: Area2D) -> void:
-	collidingObstacle = area
-	print("_on_Player_area_entered")
+	if area.isObstacle():
+		collidingObstacle = area
+		print("_on_Player_area_entered")
 
 func _on_Player_area_exited(area: Area2D) -> void:
 	if area == collidingObstacle:
@@ -87,4 +97,4 @@ func _on_Player_area_exited(area: Area2D) -> void:
 
 
 func _on_VisibilityNotifier2D_screen_exited() -> void:
-	die(position)
+	die()

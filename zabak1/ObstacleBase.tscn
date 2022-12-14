@@ -23,7 +23,9 @@ animations = [ {
 } ]
 
 [node name="ObstacleBase" type="Area2D"]
+collision_layer = 2
 script = ExtResource( 2 )
+speed = 80
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 3, 0.5 )
